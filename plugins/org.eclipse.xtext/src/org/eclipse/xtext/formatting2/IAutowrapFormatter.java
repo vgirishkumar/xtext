@@ -20,5 +20,6 @@ public interface IAutowrapFormatter {
 	/**
 	 * Called if the region is supposed to be wrapped.
 	 */
-	void format(ITextSegment region, IHiddenRegionFormatting wrapped, IFormattableDocument document);
+	void format(ITextSegment region /* TODO: should this be IHiddenRegion? */, IHiddenRegionFormatting wrapped,
+			IFormattableDocument document);
 }

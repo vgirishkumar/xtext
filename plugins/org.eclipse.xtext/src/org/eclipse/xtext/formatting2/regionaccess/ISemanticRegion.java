@@ -23,4 +23,6 @@ import org.eclipse.xtext.Keyword;
  */
 public interface ISemanticRegion extends ISequentialRegion, IAstRegion {
 
+	/// TODO: getEObjectRegion()
+
 }

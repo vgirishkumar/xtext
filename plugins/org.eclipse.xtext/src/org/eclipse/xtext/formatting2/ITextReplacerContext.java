@@ -69,4 +69,6 @@ public interface ITextReplacerContext {
 
 	ITextReplacerContext withReplacer(ITextReplacer replacer);
 
+	List<ITextReplacement> getAllReplacements();
+
 }
