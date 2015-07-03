@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.resource.URIHandler;
 import org.eclipse.xtext.build.BuildRequest;
@@ -150,7 +151,7 @@ public abstract class AbstractIncrementalBuilderTest {
         it.setDeletedFiles(Collections.<URI>unmodifiableList(CollectionLiterals.<URI>newArrayList()));
         final BuildRequest.IPostValidationCallback _function_1 = new BuildRequest.IPostValidationCallback() {
           @Override
-          public boolean afterValidate(final URI uri, final Iterable<Issue> issues) {
+          public boolean afterValidate(final Resource uri, final Iterable<Issue> issues) {
             Iterables.<Issue>addAll(AbstractIncrementalBuilderTest.this.issues, issues);
             return IterableExtensions.isEmpty(issues);
           }

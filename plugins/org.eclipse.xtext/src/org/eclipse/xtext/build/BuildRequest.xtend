@@ -16,6 +16,7 @@ import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.xtext.util.internal.Log
 import org.eclipse.xtext.validation.Issue
 import org.eclipse.xtext.util.UriUtil
+import org.eclipse.emf.ecore.resource.Resource
 
 /**
  * @author Jan Koehnlein - Initial contribution and API
@@ -54,14 +55,14 @@ class BuildRequest {
 	interface IPostValidationCallback {
 		
 		/**
-		 * @return whether the build can proceed, <code>false</code> if the build should be interrupted
+		 * @return whether the code generation can proceed for this URI
 		 */
-		def boolean afterValidate(URI validated, Iterable<Issue> issues);
+		def boolean afterValidate(Resource validated, Iterable<Issue> issues);
 	}
 	
 	@Log private static class DefaultValidationCallback implements IPostValidationCallback {
 		
-		override afterValidate(URI validated, Iterable<Issue> issues) {
+		override afterValidate(Resource validated, Iterable<Issue> issues) {
 			var boolean errorFree = true;
 			for (Issue issue : issues) {
 				switch (issue.getSeverity()) {

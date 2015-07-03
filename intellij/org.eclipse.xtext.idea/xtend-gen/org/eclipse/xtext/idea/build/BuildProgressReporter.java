@@ -17,7 +17,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import java.util.HashSet;
 import java.util.UUID;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.xtext.build.BuildRequest;
 import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.idea.build.AffectedScope;
 import org.eclipse.xtext.idea.resource.VirtualFileURIUtil;
@@ -27,7 +26,7 @@ import org.eclipse.xtext.validation.Issue;
  * @author kosyakov - Initial contribution and API
  */
 @SuppressWarnings("all")
-public class BuildProgressReporter implements BuildRequest.IPostValidationCallback {
+public class BuildProgressReporter {
   private final UUID sessionId = UUID.randomUUID();
   
   private final AffectedScope affectedScope = new AffectedScope();
@@ -58,16 +57,7 @@ public class BuildProgressReporter implements BuildRequest.IPostValidationCallba
     _affectedFiles.add(uri);
   }
   
-  @Override
-  public boolean afterValidate(final URI validated, final Iterable<Issue> issues) {
-    this.markAsAffected(validated);
-    for (final Issue issue : issues) {
-      this.reportIssue(validated, issue);
-    }
-    return true;
-  }
-  
-  protected void reportIssue(final URI validated, final Issue issue) {
+  public void reportIssue(final URI validated, final Issue issue) {
     boolean _isDisposed = this.project.isDisposed();
     if (_isDisposed) {
       return;

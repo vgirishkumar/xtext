@@ -264,8 +264,7 @@ public class IncrementalBuilder {
       IncrementalBuilder.InternalStatefulIncrementalBuilder.LOG.info(_plus_1);
       final List<Issue> validationResult = resourceValidator.validate(resource, CheckMode.ALL, null);
       BuildRequest.IPostValidationCallback _afterValidate = this.request.getAfterValidate();
-      URI _uRI_2 = resource.getURI();
-      return _afterValidate.afterValidate(_uRI_2, validationResult);
+      return _afterValidate.afterValidate(resource, validationResult);
     }
     
     protected void generate(final Resource resource, final BuildRequest request, final Source2GeneratedMapping newMappings) {

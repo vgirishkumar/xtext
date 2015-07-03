@@ -19,7 +19,6 @@ import com.intellij.openapi.util.Key
 import java.util.UUID
 import org.eclipse.emf.common.util.URI
 import org.eclipse.xtend.lib.annotations.Accessors
-import org.eclipse.xtext.build.BuildRequest
 import org.eclipse.xtext.validation.Issue
 
 import static extension org.eclipse.xtext.idea.resource.VirtualFileURIUtil.*
@@ -27,7 +26,7 @@ import static extension org.eclipse.xtext.idea.resource.VirtualFileURIUtil.*
 /**
  * @author kosyakov - Initial contribution and API
  */
-class BuildProgressReporter implements BuildRequest.IPostValidationCallback {
+class BuildProgressReporter {
 
 	val sessionId = UUID.randomUUID
 
@@ -54,15 +53,7 @@ class BuildProgressReporter implements BuildRequest.IPostValidationCallback {
 		affectedScope.affectedFiles += uri
 	}
 
-	override afterValidate(URI validated, Iterable<Issue> issues) {
-		markAsAffected(validated)
-		for (issue : issues) {
-			reportIssue(validated, issue)
-		}
-		return true
-	}
-
-	protected def reportIssue(URI validated, Issue issue) {
+	def reportIssue(URI validated, Issue issue) {
 		if (project.isDisposed)
 			return;
 		val compilerMessage = getCompilerMessage(validated, issue)

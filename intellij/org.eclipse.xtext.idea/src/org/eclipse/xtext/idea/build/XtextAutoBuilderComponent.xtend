@@ -95,8 +95,6 @@ import static extension org.eclipse.xtext.idea.resource.VirtualFileURIUtil.*
 	
 	@Inject ChunkedResourceDescriptions chunkedResourceDescriptions
 	
-	@Inject FacetProvider facetProvider
-	
 	Map<Module, Source2GeneratedMapping> module2GeneratedMapping = newHashMap() 
 	
 	new(Project project) {
@@ -297,7 +295,21 @@ import static extension org.eclipse.xtext.idea.resource.VirtualFileURIUtil.*
 						// outputs = ??
 						state = new IndexState(newIndex, fileMappings.copy)
 	
-						afterValidate = buildProgressReporter
+						afterValidate = [ validated, issues|
+							buildProgressReporter.markAsAffected(validated.URI)
+							for (issue : issues) {
+								buildProgressReporter.reportIssue(validated.URI, issue)
+							}
+							val serviceProvider = resourceServiceProviderRegistry.getResourceServiceProvider(validated.URI)
+							if (serviceProvider != null) {
+								val facetProvider = serviceProvider.get(FacetProvider)
+								val facet = facetProvider?.getFacet(module)
+								if (facet!=null) {
+									return facet.configuration.state.activated
+								}
+							}
+							return true
+						]
 						afterDeleteFile = [
 							buildProgressReporter.markAsAffected(it)
 						]

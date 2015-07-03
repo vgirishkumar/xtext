@@ -63,6 +63,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.build.BuildRequest;
 import org.eclipse.xtext.build.IncrementalBuilder;
@@ -73,6 +74,7 @@ import org.eclipse.xtext.idea.build.BuildEvent;
 import org.eclipse.xtext.idea.build.BuildProgressReporter;
 import org.eclipse.xtext.idea.facet.AbstractFacetConfiguration;
 import org.eclipse.xtext.idea.facet.FacetProvider;
+import org.eclipse.xtext.idea.facet.GeneratorConfigurationState;
 import org.eclipse.xtext.idea.resource.IdeaResourceSetProvider;
 import org.eclipse.xtext.idea.resource.VirtualFileURIUtil;
 import org.eclipse.xtext.idea.shared.IdeaSharedInjectorProvider;
@@ -84,6 +86,7 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.resource.impl.ChunkedResourceDescriptions;
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsData;
 import org.eclipse.xtext.util.internal.Log;
+import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.Exceptions;
@@ -123,9 +126,6 @@ public class XtextAutoBuilderComponent extends AbstractProjectComponent implemen
   
   @Inject
   private ChunkedResourceDescriptions chunkedResourceDescriptions;
-  
-  @Inject
-  private FacetProvider facetProvider;
   
   private Map<Module, Source2GeneratedMapping> module2GeneratedMapping = CollectionLiterals.<Module, Source2GeneratedMapping>newHashMap();
   
@@ -497,14 +497,43 @@ public class XtextAutoBuilderComponent extends AbstractProjectComponent implemen
                 Source2GeneratedMapping _copy = fileMappings.copy();
                 IndexState _indexState = new IndexState(newIndex, _copy);
                 it.setState(_indexState);
-                it.setAfterValidate(buildProgressReporter);
-                final Procedure1<URI> _function = new Procedure1<URI>() {
+                final BuildRequest.IPostValidationCallback _function = new BuildRequest.IPostValidationCallback() {
+                  @Override
+                  public boolean afterValidate(final Resource validated, final Iterable<Issue> issues) {
+                    URI _uRI = validated.getURI();
+                    buildProgressReporter.markAsAffected(_uRI);
+                    for (final Issue issue : issues) {
+                      URI _uRI_1 = validated.getURI();
+                      buildProgressReporter.reportIssue(_uRI_1, issue);
+                    }
+                    URI _uRI_2 = validated.getURI();
+                    final IResourceServiceProvider serviceProvider = XtextAutoBuilderComponent.this.resourceServiceProviderRegistry.getResourceServiceProvider(_uRI_2);
+                    boolean _notEquals = (!Objects.equal(serviceProvider, null));
+                    if (_notEquals) {
+                      final FacetProvider facetProvider = serviceProvider.<FacetProvider>get(FacetProvider.class);
+                      Facet<? extends AbstractFacetConfiguration> _facet = null;
+                      if (facetProvider!=null) {
+                        _facet=facetProvider.getFacet(module);
+                      }
+                      final Facet<? extends AbstractFacetConfiguration> facet = _facet;
+                      boolean _notEquals_1 = (!Objects.equal(facet, null));
+                      if (_notEquals_1) {
+                        AbstractFacetConfiguration _configuration = facet.getConfiguration();
+                        GeneratorConfigurationState _state = _configuration.getState();
+                        return _state.isActivated();
+                      }
+                    }
+                    return true;
+                  }
+                };
+                it.setAfterValidate(_function);
+                final Procedure1<URI> _function_1 = new Procedure1<URI>() {
                   @Override
                   public void apply(final URI it) {
                     buildProgressReporter.markAsAffected(it);
                   }
                 };
-                it.setAfterDeleteFile(_function);
+                it.setAfterDeleteFile(_function_1);
               }
             };
             final BuildRequest request = ObjectExtensions.<BuildRequest>operator_doubleArrow(_buildRequest, _function_2);

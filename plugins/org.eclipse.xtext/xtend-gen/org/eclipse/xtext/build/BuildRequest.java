@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtend.lib.annotations.Accessors;
 import org.eclipse.xtext.build.IndexState;
 import org.eclipse.xtext.diagnostics.Severity;
@@ -34,15 +35,15 @@ import org.eclipse.xtext.xbase.lib.Pure;
 public class BuildRequest {
   public interface IPostValidationCallback {
     /**
-     * @return whether the build can proceed, <code>false</code> if the build should be interrupted
+     * @return whether the code generation can proceed for this URI
      */
-    public abstract boolean afterValidate(final URI validated, final Iterable<Issue> issues);
+    public abstract boolean afterValidate(final Resource validated, final Iterable<Issue> issues);
   }
   
   @Log
   private static class DefaultValidationCallback implements BuildRequest.IPostValidationCallback {
     @Override
-    public boolean afterValidate(final URI validated, final Iterable<Issue> issues) {
+    public boolean afterValidate(final Resource validated, final Iterable<Issue> issues) {
       boolean errorFree = true;
       for (final Issue issue : issues) {
         Severity _severity = issue.getSeverity();

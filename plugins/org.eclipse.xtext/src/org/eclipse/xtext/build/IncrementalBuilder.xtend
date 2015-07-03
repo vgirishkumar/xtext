@@ -95,7 +95,7 @@ import org.eclipse.xtext.parser.IEncodingProvider
 			}
 			LOG.info("Starting validation for input: '" + resource.getURI.lastSegment + "'");
 			val validationResult = resourceValidator.validate(resource, CheckMode.ALL, null);
-			return request.afterValidate.afterValidate(resource.getURI, validationResult)
+			return request.afterValidate.afterValidate(resource, validationResult)
 		}
 	
 		protected def void generate(Resource resource, BuildRequest request, Source2GeneratedMapping newMappings) {
@@ -158,7 +158,6 @@ import org.eclipse.xtext.parser.IEncodingProvider
 				converter = resource.resourceSet.getURIConverter
 			]
 		}
-	
 	}
 
 	@Inject Provider<IncrementalBuilder.InternalStatefulIncrementalBuilder> provider

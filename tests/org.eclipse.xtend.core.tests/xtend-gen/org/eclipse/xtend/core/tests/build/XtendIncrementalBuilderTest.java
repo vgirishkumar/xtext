@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtend.core.tests.RuntimeInjectorProvider;
 import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtext.build.BuildRequest;
@@ -303,7 +304,7 @@ public class XtendIncrementalBuilderTest extends AbstractIncrementalBuilderTest 
         it.setDeletedFiles(Collections.<URI>unmodifiableList(CollectionLiterals.<URI>newArrayList(_delete)));
         final BuildRequest.IPostValidationCallback _function = new BuildRequest.IPostValidationCallback() {
           @Override
-          public boolean afterValidate(final URI uri, final Iterable<Issue> issues) {
+          public boolean afterValidate(final Resource uri, final Iterable<Issue> issues) {
             URI _uri = XtendIncrementalBuilderTest.this.uri("src/A.xtend");
             Assert.assertEquals(_uri, uri);
             Issue _head = IterableExtensions.<Issue>head(issues);
