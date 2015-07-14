@@ -443,6 +443,7 @@ class IdeaPluginGenerator extends Xtend2GeneratorFragment {
 		      	<pom.declarationSearcher implementation="«grammar.pomDeclarationSearcherName»"/>
 
 		      	«grammar.compileExtension('lang.psiStructureViewFactory', 'com.intellij.lang.PsiStructureViewFactory')»
+		      	«grammar.compileExtension('lang.documentationProvider', 'org.eclipse.xtext.idea.documentation.XtextDocumentationProvider')»
 				<facetType implementation="«grammar.facetTypeName»"/>
 				<colorSettingsPage implementation="«grammar.colorSettingsPage»"/>
 				<highlightVisitor implementation="«grammar.semanticHighlightVisitorName»"/>

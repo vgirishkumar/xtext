@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.generator.trace.AbstractTraceRegion;
 import org.eclipse.xtext.generator.trace.ILocationData;
@@ -29,6 +30,8 @@ import org.eclipse.xtext.generator.trace.TraceFileNameProvider;
 import org.eclipse.xtext.generator.trace.TraceRegionSerializer;
 import org.eclipse.xtext.idea.build.XtextAutoBuilderComponent;
 import org.eclipse.xtext.idea.resource.VirtualFileURIUtil;
+import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.psi.XtextPsiElement;
 import org.eclipse.xtext.psi.impl.BaseXtextFile;
 import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.TextRegion;
@@ -95,8 +98,8 @@ public class TraceUtils {
                 } else {
                   InputStream _inputStream = traceFile.getInputStream();
                   final AbstractTraceRegion traces = this.traceRegionSerializer.readTraceRegionFrom(_inputStream);
-                  TextRange _textRange = xtextElement.getTextRange();
-                  final ITextRegion sourceRegion = this.toTextRegion(_textRange);
+                  INode _iNode = ((XtextPsiElement) xtextElement).getINode();
+                  final ITextRegion sourceRegion = _iNode.getTextRegion();
                   Iterator<AbstractTraceRegion> _leafIterator = traces.leafIterator();
                   final Function1<AbstractTraceRegion, Boolean> _function_1 = new Function1<AbstractTraceRegion, Boolean>() {
                     @Override
@@ -105,8 +108,9 @@ public class TraceUtils {
                       return Boolean.valueOf(_mergedAssociatedLocation.contains(sourceRegion));
                     }
                   };
-                  final Iterator<AbstractTraceRegion> matches = IteratorExtensions.<AbstractTraceRegion>filter(_leafIterator, _function_1);
-                  boolean _isEmpty = IteratorExtensions.isEmpty(matches);
+                  Iterator<AbstractTraceRegion> _filter_1 = IteratorExtensions.<AbstractTraceRegion>filter(_leafIterator, _function_1);
+                  final List<AbstractTraceRegion> matches = IteratorExtensions.<AbstractTraceRegion>toList(_filter_1);
+                  boolean _isEmpty = matches.isEmpty();
                   boolean _not = (!_isEmpty);
                   if (_not) {
                     final Comparator<AbstractTraceRegion> _function_2 = new Comparator<AbstractTraceRegion>() {
@@ -119,7 +123,7 @@ public class TraceUtils {
                         return Integer.valueOf(_length).compareTo(Integer.valueOf(_length_1));
                       }
                     };
-                    final AbstractTraceRegion bestTrace = IteratorExtensions.<AbstractTraceRegion>min(matches, _function_2);
+                    final AbstractTraceRegion bestTrace = IterableExtensions.<AbstractTraceRegion>min(matches, _function_2);
                     int _myOffset = bestTrace.getMyOffset();
                     PsiElement _elementAtOffset = PsiUtilCore.getElementAtOffset(javaPsiFile, _myOffset);
                     javaElements.add(_elementAtOffset);

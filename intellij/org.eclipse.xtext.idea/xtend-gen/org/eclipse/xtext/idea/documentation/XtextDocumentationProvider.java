@@ -1,0 +1,201 @@
+/**
+ * Copyright (c) 2015 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
+package org.eclipse.xtext.idea.documentation;
+
+import com.google.common.base.Objects;
+import com.google.inject.Inject;
+import com.intellij.codeInsight.documentation.DocumentationManager;
+import com.intellij.lang.documentation.AbstractDocumentationProvider;
+import com.intellij.lang.documentation.DocumentationProvider;
+import com.intellij.psi.PsiDocCommentOwner;
+import com.intellij.psi.PsiElement;
+import java.util.ArrayList;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtend.lib.annotations.Accessors;
+import org.eclipse.xtext.idea.documentation.XtextCalleeDocumentationProvider;
+import org.eclipse.xtext.idea.trace.TraceUtils;
+import org.eclipse.xtext.psi.PsiEObject;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.xbase.lib.CollectionLiterals;
+import org.eclipse.xtext.xbase.lib.IterableExtensions;
+import org.eclipse.xtext.xbase.lib.Pure;
+
+/**
+ * @author Moritz Eysholdt - Initial contribution and API
+ */
+@SuppressWarnings("all")
+public class XtextDocumentationProvider extends AbstractDocumentationProvider {
+  @Accessors
+  public static class GeneratedCodeDelegate {
+    private final PsiElement generatedElement;
+    
+    private final PsiElement generatedOriginalElement;
+    
+    private final DocumentationProvider delegate;
+    
+    public GeneratedCodeDelegate(final PsiElement generatedElement, final PsiElement generatedOriginalElement, final DocumentationProvider delegate) {
+      super();
+      this.generatedElement = generatedElement;
+      this.generatedOriginalElement = generatedOriginalElement;
+      this.delegate = delegate;
+    }
+    
+    @Pure
+    public PsiElement getGeneratedElement() {
+      return this.generatedElement;
+    }
+    
+    @Pure
+    public PsiElement getGeneratedOriginalElement() {
+      return this.generatedOriginalElement;
+    }
+    
+    @Pure
+    public DocumentationProvider getDelegate() {
+      return this.delegate;
+    }
+  }
+  
+  @Inject
+  private IResourceServiceProvider.Registry resourceServiceProviderRegistry;
+  
+  @Inject
+  private TraceUtils traceUtils;
+  
+  @Override
+  public String getQuickNavigateInfo(final PsiElement element, final PsiElement originalElement) {
+    final XtextDocumentationProvider.GeneratedCodeDelegate gen = this.findDocumentationInGeneratedCode(element, originalElement);
+    boolean _notEquals = (!Objects.equal(gen, null));
+    if (_notEquals) {
+      final String result = gen.delegate.getQuickNavigateInfo(gen.generatedElement, gen.generatedOriginalElement);
+      boolean _notEquals_1 = (!Objects.equal(result, null));
+      if (_notEquals_1) {
+        return result;
+      }
+    }
+    if ((element instanceof PsiEObject)) {
+      final EObject eobj = ((PsiEObject)element).getEObject();
+      XtextCalleeDocumentationProvider _calleeDocumentationProvider = this.getCalleeDocumentationProvider(eobj);
+      String _quickNavigateInfo = null;
+      if (_calleeDocumentationProvider!=null) {
+        _quickNavigateInfo=_calleeDocumentationProvider.getQuickNavigateInfo(((PsiEObject)element));
+      }
+      final String result_1 = _quickNavigateInfo;
+      boolean _notEquals_2 = (!Objects.equal(result_1, null));
+      if (_notEquals_2) {
+        return result_1;
+      }
+      URI _uRI = EcoreUtil.getURI(eobj);
+      return _uRI.toString();
+    }
+    return null;
+  }
+  
+  @Override
+  public String generateDoc(final PsiElement element, final PsiElement originalElement) {
+    final XtextDocumentationProvider.GeneratedCodeDelegate gen = this.findDocumentationInGeneratedCode(element, originalElement);
+    boolean _notEquals = (!Objects.equal(gen, null));
+    if (_notEquals) {
+      final String result = gen.delegate.generateDoc(gen.generatedElement, gen.generatedOriginalElement);
+      boolean _notEquals_1 = (!Objects.equal(result, null));
+      if (_notEquals_1) {
+        return result;
+      }
+    }
+    if ((element instanceof PsiEObject)) {
+      final EObject eobj = ((PsiEObject)element).getEObject();
+      XtextCalleeDocumentationProvider _calleeDocumentationProvider = this.getCalleeDocumentationProvider(eobj);
+      String _generateDoc = null;
+      if (_calleeDocumentationProvider!=null) {
+        _generateDoc=_calleeDocumentationProvider.generateDoc(((PsiEObject)element));
+      }
+      final String result_1 = _generateDoc;
+      boolean _notEquals_2 = (!Objects.equal(result_1, null));
+      if (_notEquals_2) {
+        return result_1;
+      }
+      URI _uRI = EcoreUtil.getURI(eobj);
+      return _uRI.toString();
+    }
+    return null;
+  }
+  
+  protected XtextCalleeDocumentationProvider getCalleeDocumentationProvider(final EObject object) {
+    boolean _or = false;
+    boolean _equals = Objects.equal(object, null);
+    if (_equals) {
+      _or = true;
+    } else {
+      boolean _eIsProxy = object.eIsProxy();
+      _or = _eIsProxy;
+    }
+    if (_or) {
+      return null;
+    }
+    Resource _eResource = object.eResource();
+    final URI uri = _eResource.getURI();
+    final IResourceServiceProvider resourceServiceProvider = this.resourceServiceProviderRegistry.getResourceServiceProvider(uri);
+    boolean _equals_1 = Objects.equal(resourceServiceProvider, null);
+    if (_equals_1) {
+      return null;
+    }
+    XtextCalleeDocumentationProvider _get = null;
+    if (resourceServiceProvider!=null) {
+      _get=resourceServiceProvider.<XtextCalleeDocumentationProvider>get(XtextCalleeDocumentationProvider.class);
+    }
+    return _get;
+  }
+  
+  protected XtextDocumentationProvider.GeneratedCodeDelegate findDocumentationInGeneratedCode(final PsiElement element, final PsiElement originalElement) {
+    final PsiElement generatedElement = this.getGeneratedElement(element);
+    boolean _equals = Objects.equal(generatedElement, null);
+    if (_equals) {
+      return null;
+    }
+    PsiElement _elvis = null;
+    PsiElement _generatedElement = this.getGeneratedElement(originalElement);
+    if (_generatedElement != null) {
+      _elvis = _generatedElement;
+    } else {
+      _elvis = originalElement;
+    }
+    final PsiElement generatedOriginalElement = _elvis;
+    final DocumentationProvider delegate = DocumentationManager.getProviderFromElement(generatedElement, generatedOriginalElement);
+    boolean _equals_1 = Objects.equal(delegate, null);
+    if (_equals_1) {
+      return null;
+    }
+    return new XtextDocumentationProvider.GeneratedCodeDelegate(generatedElement, generatedOriginalElement, delegate);
+  }
+  
+  private PsiElement getGeneratedElement(final PsiElement element) {
+    final Iterable<PsiElement> generated = this.traceUtils.getBestJavaElementMatch(element);
+    Iterable<PsiElement> current = generated;
+    while ((!IterableExtensions.isEmpty(current))) {
+      {
+        final ArrayList<PsiElement> newCurrent = CollectionLiterals.<PsiElement>newArrayList();
+        for (final PsiElement ele : current) {
+          if ((ele instanceof PsiDocCommentOwner)) {
+            return ele;
+          } else {
+            final PsiElement parent = ele.getParent();
+            boolean _notEquals = (!Objects.equal(parent, null));
+            if (_notEquals) {
+              newCurrent.add(parent);
+            }
+          }
+        }
+        current = newCurrent;
+      }
+    }
+    return null;
+  }
+}

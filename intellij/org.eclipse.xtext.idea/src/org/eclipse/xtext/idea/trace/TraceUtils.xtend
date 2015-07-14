@@ -13,9 +13,12 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiUtilCore
+import org.eclipse.emf.common.util.URI
+import org.eclipse.xtext.generator.trace.AbstractTraceRegionToString
 import org.eclipse.xtext.generator.trace.TraceFileNameProvider
 import org.eclipse.xtext.generator.trace.TraceRegionSerializer
 import org.eclipse.xtext.idea.build.XtextAutoBuilderComponent
+import org.eclipse.xtext.idea.filesystem.IdeaWorkspaceConfig
 import org.eclipse.xtext.psi.impl.BaseXtextFile
 import org.eclipse.xtext.util.ITextRegion
 import org.eclipse.xtext.util.TextRegion
@@ -23,6 +26,8 @@ import org.jetbrains.annotations.NotNull
 
 import static extension com.intellij.psi.util.PsiTreeUtil.*
 import static extension org.eclipse.xtext.idea.resource.VirtualFileURIUtil.*
+import org.eclipse.xtext.psi.PsiNamedEObject
+import org.eclipse.xtext.psi.XtextPsiElement
 
 /**
  * @author dhuebner - Initial contribution and API
@@ -47,8 +52,33 @@ class TraceUtils {
 							javaElements.add(javaPsiFile)
 						} else {
 							val traces = traceRegionSerializer.readTraceRegionFrom(traceFile.inputStream)
-							val sourceRegion = xtextElement.textRange.toTextRegion
-							val matches = traces.leafIterator.filter[mergedAssociatedLocation.contains(sourceRegion)]
+//							try {
+//								val module = new IdeaWorkspaceConfig(xtextElement.project).findProjectContaining(uri)
+//								val srcURI = module.sourceFolders.head.path
+//								val str = new AbstractTraceRegionToString() {
+//
+//									override protected getLocalURI() {
+//										uri
+//									}
+//
+//									override getText(URI uri) {
+//										new String(uri.resolve(srcURI).virtualFile.contentsToByteArray)
+//									}
+//
+//									override protected getTrace() {
+//										traces
+//									}
+//
+//								}
+//								val s = str.toString
+//								println(s)
+//							} catch (Throwable t) {
+//								t.printStackTrace
+//							}
+							val sourceRegion = (xtextElement as XtextPsiElement).getINode().textRegion
+							// xtextElement.textRange.toTextRegion
+							val matches = traces.leafIterator.filter[mergedAssociatedLocation.contains(sourceRegion)].
+								toList
 							if (!matches.empty) {
 								val bestTrace = matches.min([ t1, t2 |
 									t1.mergedAssociatedLocation.length.compareTo(t2.mergedAssociatedLocation.length)
