@@ -7,6 +7,7 @@
  *******************************************************************************/
 package org.eclipse.xtext.builder.trace;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.LanguageInfo;
 import org.eclipse.xtext.generator.trace.AbstractTraceRegion;
+import org.eclipse.xtext.generator.trace.AbstractTraceRegionToString;
 import org.eclipse.xtext.generator.trace.ILocationData;
 import org.eclipse.xtext.generator.trace.ILocationInResource;
 import org.eclipse.xtext.generator.trace.ITrace;
@@ -35,12 +37,14 @@ import org.eclipse.xtext.ui.workspace.EclipseProjectConfig;
 import org.eclipse.xtext.ui.workspace.EclipseWorkspaceConfigProvider;
 import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.ITextRegionWithLineInformation;
+import org.eclipse.xtext.xbase.lib.Exceptions;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
 /**
@@ -525,6 +529,34 @@ public abstract class AbstractTrace implements ITrace, ITrace.Internal {
 			return serviceProvider.get(type);
 		}
 		return null;
+	}
+	
+	@Override
+	public String toString() {
+		return new AbstractTraceRegionToString() {
+
+			@Override
+			protected AbstractTraceRegion getTrace() {
+				return rootTraceRegion;
+			}
+
+			@Override
+			public String getText(URI uri) {
+				try {
+					return new String(ByteStreams.toByteArray(getContents(uri, getLocalProject())));
+				} catch (IOException e) {
+					Exceptions.sneakyThrow(e);
+				} catch (CoreException e) {
+					Exceptions.sneakyThrow(e);
+				}
+				return "";
+			}
+
+			@Override
+			protected URI getLocalURI() {
+				return AbstractTrace.this.getLocalURI();
+			}
+		}.toString();
 	}
 
 }

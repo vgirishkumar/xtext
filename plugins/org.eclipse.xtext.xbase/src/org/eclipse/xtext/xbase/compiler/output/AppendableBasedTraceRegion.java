@@ -11,8 +11,10 @@ import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.generator.trace.AbstractTraceRegion;
+import org.eclipse.xtext.generator.trace.AbstractTraceRegionToString;
 import org.eclipse.xtext.generator.trace.ILocationData;
 import org.eclipse.xtext.generator.trace.LocationData;
+import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.Strings;
 
 import com.google.common.collect.Lists;
@@ -21,6 +23,8 @@ import com.google.common.collect.Lists;
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public class AppendableBasedTraceRegion extends AbstractTraceRegion {
+	
+	private final TreeAppendable delegate;
 	private final List<ILocationData> locations;
 	private int offset;
 	private int length;
@@ -36,6 +40,7 @@ public class AppendableBasedTraceRegion extends AbstractTraceRegion {
 
 	public AppendableBasedTraceRegion(/* @Nullable */ AbstractTraceRegion parent, TreeAppendable delegate, int offset, int lineNumber) {
 		super(parent);
+		this.delegate = delegate;
 		this.offset = offset;
 		this.lineNumber = lineNumber;
 		this.useForDebugging = delegate.isUseForDebugging();
@@ -164,6 +169,33 @@ public class AppendableBasedTraceRegion extends AbstractTraceRegion {
 	@Override
 	public List<ILocationData> getAssociatedLocations() {
 		return locations;
+	}
+	
+	@Override
+	public String toString() {
+		return new AbstractTraceRegionToString() {
+
+			@Override
+			protected URI getLocalURI() {
+				return URI.createURI("generated.java");
+			}
+
+			@Override
+			public String getText(URI uri) {
+				if (uri.equals(getLocalURI())) {
+					AppendableBasedTraceRegion current = AppendableBasedTraceRegion.this;
+					while (current.getParent() != null)
+						current = (AppendableBasedTraceRegion) current.getParent();
+					return current.delegate.getContent();
+				}
+				return ((XtextResource) delegate.getState().getResource()).getParseResult().getRootNode().getText();
+			}
+
+			@Override
+			protected AbstractTraceRegion getTrace() {
+				return AppendableBasedTraceRegion.this;
+			}
+		}.toString();
 	}
 	
 }
