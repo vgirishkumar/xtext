@@ -12,7 +12,6 @@ Export-Package: org.eclipse.xtext.util;
    com.google.inject,
    org.eclipse.emf.common.notify,
    org.eclipse.emf.ecore.resource,
-   org.apache.log4j,
    org.eclipse.xtext.util.concurrent,
    org.eclipse.emf.ecore.util",
  org.eclipse.xtext.util.concurrent;uses:="org.eclipse.xtext.util",
